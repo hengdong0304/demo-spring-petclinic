@@ -32,7 +32,8 @@
     <maven-checkstyle.version>3.2.2</maven-checkstyle.version>
     <nohttp-checkstyle.version>0.0.11</nohttp-checkstyle.version>
     <spring-format.version>0.0.39</spring-format.version>
-
+    <skipTestOptimizer>false</skipTestOptimizer>
+    <skipTests>false</skipTests>
   </properties>
 
   <dependencies>
@@ -137,6 +138,12 @@
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.9.3</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 
@@ -177,6 +184,54 @@
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.diffblue.cover</groupId>
+        <artifactId>cover-maven-plugin</artifactId>
+        <version>2023.12.01</version>
+        <executions>
+          <execution>
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>optimize</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${skipTestOptimizer}</skip>
+          <skipTests>${skipTests}</skipTests>
+          <failOnError>true</failOnError>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <configuration>
+          <failIfNoTests>true</failIfNoTests>
+          <includes>
+            <include>${com.diffblue.selectedTests}</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <failIfNoTests>false</failIfNoTests>
+          <includes>
+            <include>${com.diffblue.selectedITs}</include>
+          </includes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -260,6 +315,14 @@
   </repositories>
 
   <pluginRepositories>
+    <pluginRepository>
+      <id>maven-diffblue-repository</id>
+      <name>Diffblue Public Maven Repository</name>
+      <url>https://maven.diffblue.com/release</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
     <pluginRepository>
       <id>spring-snapshots</id>
       <name>Spring Snapshots</name>
